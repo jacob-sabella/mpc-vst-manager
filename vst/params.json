@@ -1,0 +1,656 @@
+{
+ "name": "Plugin Manager",
+ "params": [
+  {
+   "key": "tab",
+   "name": "View",
+   "options": [
+    "DISCOVER",
+    "INSTALLED",
+    "UPDATES"
+   ]
+  },
+  {
+   "key": "kind",
+   "name": "Filter",
+   "options": [
+    "All",
+    "Instruments",
+    "Effects"
+   ]
+  },
+  {
+   "key": "net",
+   "name": "Network",
+   "options": [
+    "online",
+    "offline"
+   ]
+  },
+  {
+   "key": "disk",
+   "name": "Disk used",
+   "options": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10"
+   ]
+  },
+  {
+   "key": "disk_txt",
+   "name": "Disk free",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "upd_badge",
+   "name": "Updates badge",
+   "options": [
+    "off",
+    "on"
+   ]
+  },
+  {
+   "key": "upd_count",
+   "name": "Updates",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "problem",
+   "name": "Problem",
+   "options": [
+    "no",
+    "yes"
+   ]
+  },
+  {
+   "key": "problem_txt",
+   "name": "Problem text",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "empty",
+   "name": "Empty",
+   "options": [
+    "no",
+    "offline",
+    "empty"
+   ]
+  },
+  {
+   "key": "empty_txt",
+   "name": "Empty text",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "refresh",
+   "name": "Refresh",
+   "type": "trigger",
+   "momentary": true
+  },
+  {
+   "key": "page_prev",
+   "name": "Page <",
+   "type": "trigger",
+   "momentary": true
+  },
+  {
+   "key": "page_next",
+   "name": "Page >",
+   "type": "trigger",
+   "momentary": true
+  },
+  {
+   "key": "nav_prev",
+   "name": "Prev page",
+   "options": [
+    "off",
+    "on"
+   ]
+  },
+  {
+   "key": "nav_next",
+   "name": "Next page",
+   "options": [
+    "off",
+    "on"
+   ]
+  },
+  {
+   "key": "page_txt",
+   "name": "Page",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "summary",
+   "name": "Summary",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "status",
+   "name": "Status",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "status_kind",
+   "name": "Status kind",
+   "options": [
+    "ok",
+    "warn",
+    "error"
+   ]
+  },
+  {
+   "key": "busy",
+   "name": "Downloading",
+   "options": [
+    "off",
+    "on"
+   ]
+  },
+  {
+   "key": "progress",
+   "name": "Progress",
+   "options": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20"
+   ]
+  },
+  {
+   "key": "update_all",
+   "name": "Update all",
+   "type": "trigger",
+   "momentary": true
+  },
+  {
+   "key": "upd_all",
+   "name": "Update all on",
+   "options": [
+    "off",
+    "on"
+   ]
+  },
+  {
+   "key": "apply",
+   "name": "Apply",
+   "type": "trigger",
+   "momentary": true
+  },
+  {
+   "key": "apply_state",
+   "name": "Apply state",
+   "options": [
+    "off",
+    "apply",
+    "preparing",
+    "ready",
+    "retry"
+   ]
+  },
+  {
+   "key": "card1_1",
+   "name": "Plugin 1",
+   "type": "slot",
+   "display": "string"
+  },
+  {
+   "key": "r1_vis",
+   "name": "Card 1 shown",
+   "options": [
+    "off",
+    "on"
+   ]
+  },
+  {
+   "key": "r1_inst",
+   "name": "Card 1 installed",
+   "options": [
+    "no",
+    "yes"
+   ]
+  },
+  {
+   "key": "r1_init",
+   "name": "Card 1 initials",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r1_kindtxt",
+   "name": "Card 1 kind",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r1_meta",
+   "name": "Card 1 meta",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r1_chan",
+   "name": "Card 1 channel",
+   "options": [
+    "none",
+    "stable",
+    "beta"
+   ]
+  },
+  {
+   "key": "r1_cpu",
+   "name": "Card 1 CPU",
+   "options": [
+    "off",
+    "on"
+   ]
+  },
+  {
+   "key": "r1_old",
+   "name": "Card 1 old",
+   "options": [
+    "off",
+    "on"
+   ]
+  },
+  {
+   "key": "r1_tested",
+   "name": "Card 1 tested",
+   "options": [
+    "off",
+    "on"
+   ]
+  },
+  {
+   "key": "r1_tested_txt",
+   "name": "Card 1 tested on",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r1_ver",
+   "name": "Card 1 version",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r1_from",
+   "name": "Card 1 from",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r1_size",
+   "name": "Card 1 size",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r1_sha",
+   "name": "Card 1 sha",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r1_state",
+   "name": "Card 1 state",
+   "options": [
+    "none",
+    "install",
+    "update",
+    "installed",
+    "q_install",
+    "q_update",
+    "q_remove",
+    "disabled",
+    "menu"
+   ]
+  },
+  {
+   "key": "r1_act",
+   "name": "Card 1 action",
+   "type": "trigger",
+   "momentary": true
+  },
+  {
+   "key": "r1_more",
+   "name": "Card 1 more",
+   "type": "trigger",
+   "momentary": true
+  },
+  {
+   "key": "r1_reinstall",
+   "name": "Card 1 reinstall",
+   "type": "trigger",
+   "momentary": true
+  },
+  {
+   "key": "r1_remove",
+   "name": "Card 1 remove",
+   "type": "trigger",
+   "momentary": true
+  },
+  {
+   "key": "card2_1",
+   "name": "Plugin 2",
+   "type": "slot",
+   "display": "string"
+  },
+  {
+   "key": "r2_vis",
+   "name": "Card 2 shown",
+   "options": [
+    "off",
+    "on"
+   ]
+  },
+  {
+   "key": "r2_inst",
+   "name": "Card 2 installed",
+   "options": [
+    "no",
+    "yes"
+   ]
+  },
+  {
+   "key": "r2_init",
+   "name": "Card 2 initials",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r2_kindtxt",
+   "name": "Card 2 kind",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r2_meta",
+   "name": "Card 2 meta",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r2_chan",
+   "name": "Card 2 channel",
+   "options": [
+    "none",
+    "stable",
+    "beta"
+   ]
+  },
+  {
+   "key": "r2_cpu",
+   "name": "Card 2 CPU",
+   "options": [
+    "off",
+    "on"
+   ]
+  },
+  {
+   "key": "r2_old",
+   "name": "Card 2 old",
+   "options": [
+    "off",
+    "on"
+   ]
+  },
+  {
+   "key": "r2_tested",
+   "name": "Card 2 tested",
+   "options": [
+    "off",
+    "on"
+   ]
+  },
+  {
+   "key": "r2_tested_txt",
+   "name": "Card 2 tested on",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r2_ver",
+   "name": "Card 2 version",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r2_from",
+   "name": "Card 2 from",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r2_size",
+   "name": "Card 2 size",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r2_sha",
+   "name": "Card 2 sha",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r2_state",
+   "name": "Card 2 state",
+   "options": [
+    "none",
+    "install",
+    "update",
+    "installed",
+    "q_install",
+    "q_update",
+    "q_remove",
+    "disabled",
+    "menu"
+   ]
+  },
+  {
+   "key": "r2_act",
+   "name": "Card 2 action",
+   "type": "trigger",
+   "momentary": true
+  },
+  {
+   "key": "r2_more",
+   "name": "Card 2 more",
+   "type": "trigger",
+   "momentary": true
+  },
+  {
+   "key": "r2_reinstall",
+   "name": "Card 2 reinstall",
+   "type": "trigger",
+   "momentary": true
+  },
+  {
+   "key": "r2_remove",
+   "name": "Card 2 remove",
+   "type": "trigger",
+   "momentary": true
+  },
+  {
+   "key": "card3_1",
+   "name": "Plugin 3",
+   "type": "slot",
+   "display": "string"
+  },
+  {
+   "key": "r3_vis",
+   "name": "Card 3 shown",
+   "options": [
+    "off",
+    "on"
+   ]
+  },
+  {
+   "key": "r3_inst",
+   "name": "Card 3 installed",
+   "options": [
+    "no",
+    "yes"
+   ]
+  },
+  {
+   "key": "r3_init",
+   "name": "Card 3 initials",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r3_kindtxt",
+   "name": "Card 3 kind",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r3_meta",
+   "name": "Card 3 meta",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r3_chan",
+   "name": "Card 3 channel",
+   "options": [
+    "none",
+    "stable",
+    "beta"
+   ]
+  },
+  {
+   "key": "r3_cpu",
+   "name": "Card 3 CPU",
+   "options": [
+    "off",
+    "on"
+   ]
+  },
+  {
+   "key": "r3_old",
+   "name": "Card 3 old",
+   "options": [
+    "off",
+    "on"
+   ]
+  },
+  {
+   "key": "r3_tested",
+   "name": "Card 3 tested",
+   "options": [
+    "off",
+    "on"
+   ]
+  },
+  {
+   "key": "r3_tested_txt",
+   "name": "Card 3 tested on",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r3_ver",
+   "name": "Card 3 version",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r3_from",
+   "name": "Card 3 from",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r3_size",
+   "name": "Card 3 size",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r3_sha",
+   "name": "Card 3 sha",
+   "type": "readout",
+   "display": "string"
+  },
+  {
+   "key": "r3_state",
+   "name": "Card 3 state",
+   "options": [
+    "none",
+    "install",
+    "update",
+    "installed",
+    "q_install",
+    "q_update",
+    "q_remove",
+    "disabled",
+    "menu"
+   ]
+  },
+  {
+   "key": "r3_act",
+   "name": "Card 3 action",
+   "type": "trigger",
+   "momentary": true
+  },
+  {
+   "key": "r3_more",
+   "name": "Card 3 more",
+   "type": "trigger",
+   "momentary": true
+  },
+  {
+   "key": "r3_reinstall",
+   "name": "Card 3 reinstall",
+   "type": "trigger",
+   "momentary": true
+  },
+  {
+   "key": "r3_remove",
+   "name": "Card 3 remove",
+   "type": "trigger",
+   "momentary": true
+  },
+  {
+   "key": "noop",
+   "name": "Badge",
+   "type": "trigger",
+   "momentary": true
+  }
+ ]
+}
