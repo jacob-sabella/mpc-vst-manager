@@ -18,5 +18,5 @@ for dev in tests/devices/*.sh; do
   echo "== $dev"
   # each device starts from a clean filesystem
   rm -rf /media /sdcard /tmp/pluginmgr; mkdir -p /media
-  sh "$dev" && /tmp/drive && grep -E "location|problem" /tmp/pluginmgr/device.txt
+  sh "$dev" && /tmp/drive && grep -E "location|target|problem" /tmp/pluginmgr/device.txt
 done'
