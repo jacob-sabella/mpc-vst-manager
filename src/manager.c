@@ -9,6 +9,7 @@
  * dropped). Applying writes a script that stops MPC, runs each package's own install.sh / uninstall.sh and starts
  * MPC again; it is launched with systemd-run so it lives outside acvs.service's cgroup and survives the stop
  * (docs/NOTES.md, "Restarting MPC from inside a plugin via systemd-run"). The plugin makes no sound. */
+#define _GNU_SOURCE   /* dladdr */
 #include <dirent.h>
 #include <dlfcn.h>
 #include <errno.h>
@@ -460,7 +461,7 @@ static const char *top_member(const char *k, const char *v, void *ud) {
 
 typedef struct { char name[64], uid[16], file[256]; } entry_t;
 struct device {
-    char settings[200], base[200], state[220], arch[32], target[200], problem[24], keys[160];
+    char settings[200], base[200], state[220], arch[32], target[200], problem[24], keys[160], via[48];
     char loc[8][200];
     int nloc, nent, systemd_run, cgroup2;
     entry_t ent[128];
@@ -497,35 +498,58 @@ static void attr(const char *tag, const char *end, const char *name, char *out, 
     if ((q = strchr(p, '"')) && q < end) snprintf(out, n, "%.*s", (int)(q - p), p);
 }
 
-/* the filesystem a path is on, from /proc/mounts (longest matching mount point) */
-static int good_fs(const char *path) {
+/* the filesystem a path is on, from /proc/mounts (longest matching mount point); why it can't hold a plugin, or NULL */
+static const char *bad_fs(const char *path, char *why, size_t n) {
     FILE *f = fopen("/proc/mounts", "r");
     char dev[128], mnt[256], type[32], opts[512];
     size_t best = 0;
     int ok = 0;
+    snprintf(why, n, "not on a mounted filesystem");
     while (f && fscanf(f, "%127s %255s %31s %511s %*d %*d", dev, mnt, type, opts) == 4) {
-        size_t n = strlen(mnt);
-        if (strncmp(path, mnt, n) || (path[n] && path[n] != '/' && n > 1) || n < best) continue;
-        best = n;
+        size_t l = strlen(mnt);
+        if (strncmp(path, mnt, l) || (path[l] && path[l] != '/' && l > 1) || l < best) continue;
+        best = l;
         int rw = !strncmp(opts, "rw", 2), exec = !strstr(opts, "noexec");
-        ok = rw && exec && (FS_ANY || !strcmp(type, "ext4") || !strcmp(type, "ext3") || !strcmp(type, "f2fs") || !strcmp(type, "btrfs"));
+        int fs = FS_ANY || !strcmp(type, "ext4") || !strcmp(type, "ext3") || !strcmp(type, "f2fs") || !strcmp(type, "btrfs");
+        ok = rw && exec && fs;
+        snprintf(why, n, "%s is %s%s%s", mnt, type, rw ? "" : ", read-only", exec ? "" : ", noexec");
     }
     if (f) fclose(f);
-    return ok;
+    return ok ? NULL : why;
 }
 
-static int good_target(const char *loc) {   /* a Synths folder a plugin (.so) can be installed into */
-    char parent[200];
+/* why a Synths folder can't take a plugin (.so), or NULL if it can */
+static const char *bad_target(const char *path, char *why, size_t n) {
+    char loc[200], parent[200];
     struct statvfs sv;
+    snprintf(loc, sizeof loc, "%s", path);
+    for (size_t l = strlen(loc); l > 1 && loc[l - 1] == '/'; ) loc[--l] = 0;
     snprintf(parent, sizeof parent, "%s", loc);
     char *slash = strrchr(parent, '/');
     if (slash && slash != parent) *slash = 0;
     const char *leaf = strrchr(loc, '/');   /* plugin folders go in a Synths folder, never Akai's Expansions content */
-    if (!leaf || strcmp(leaf, "/Synths") || !strncmp(loc, "/usr/", 5) || !safe(loc) || strchr(loc, '&') || strchr(loc, '|')) return 0;
-    if (!is_dir(loc) && !is_dir(parent)) return 0;
-    if (!good_fs(is_dir(loc) ? loc : parent)) return 0;
-    if (statvfs(is_dir(loc) ? loc : parent, &sv) || (unsigned long long)sv.f_bavail * sv.f_frsize < 64ull << 20) return 0;
-    return 1;
+    if (!leaf || strcmp(leaf, "/Synths")) return "not a Synths folder";
+    if (!strncmp(loc, "/usr/", 5)) return "factory content";
+    if (!safe(loc) || strchr(loc, '&') || strchr(loc, '|')) return "unsupported characters";
+    const char *at = is_dir(loc) ? loc : parent;
+    if (!is_dir(at)) return "missing";
+    if (bad_fs(at, why, n)) return why;
+    if (statvfs(at, &sv) || (unsigned long long)sv.f_bavail * sv.f_frsize < 64ull << 20) return "under 64 MB free";
+    return NULL;
+}
+
+static int good_target(const char *loc) {
+    char why[320];
+    return !bad_target(loc, why, sizeof why);
+}
+
+/* the Synths folder this plugin runs from: proof that MPC loads plugins (and their skins) from there */
+static void own_synths(char *out, size_t n) {
+    Dl_info di;
+    out[0] = 0;
+    if (!dladdr((void *)own_synths, &di) || !di.dli_fname || di.dli_fname[0] != '/') return;
+    snprintf(out, n, "%s", di.dli_fname);
+    for (int i = 0; i < 2; i++) { char *sl = strrchr(out, '/'); if (sl && sl != out) *sl = 0; }
 }
 
 static void probe_device(device_t *d) {
@@ -573,6 +597,25 @@ static void probe_device(device_t *d) {
             int internal = !strncmp(d->loc[i], "/media/az01-internal", 20) || !strncmp(d->loc[i], "/sdcard/", 8);
             if ((pass || internal) && good_target(d->loc[i])) snprintf(d->target, sizeof d->target, "%s", d->loc[i]);
         }
+    if (d->target[0]) snprintf(d->via, sizeof d->via, "SynthContentLocations");
+    /* none listed is usable (a trailing "/", only card or factory locations, ...): the folder this plugin was installed
+     * in, then where other plugin folders are, then the internal drive's default */
+    char cand[200];
+    own_synths(cand, sizeof cand);
+    if (!d->target[0] && cand[0] && good_target(cand))
+        snprintf(d->target, sizeof d->target, "%s", cand), snprintf(d->via, sizeof d->via, "the Plugin Manager's folder");
+    for (int i = 0; i < d->nent && !d->target[0]; i++) {
+        snprintf(cand, sizeof cand, "%s", d->ent[i].file);
+        char *sl = strrchr(cand, '/');
+        if (sl) *sl = 0;
+        sl = strrchr(cand, '/');
+        if (sl && strstr(sl, " - VST - ") && (*sl = 0, good_target(cand)))
+            snprintf(d->target, sizeof d->target, "%s", cand), snprintf(d->via, sizeof d->via, "an installed plugin");
+    }
+    static const char *defaults[] = {"/media/az01-internal/Synths", "/sdcard/Synths"};
+    for (int i = 0; i < 2 && !d->target[0]; i++)
+        if (good_target(defaults[i])) snprintf(d->target, sizeof d->target, "%s", defaults[i]), snprintf(d->via, sizeof d->via, "default");
+    for (size_t l = strlen(d->target); l > 1 && d->target[l - 1] == '/'; ) d->target[--l] = 0;
     /* the manager's own record of versions it installed, next to the Settings folder */
     snprintf(d->base, sizeof d->base, "%s", d->settings);
     char *cut = strstr(d->base, "/Settings/");
@@ -598,8 +641,14 @@ static void write_report(const device_t *d) {
     char *os = slurp("/etc/os-release", 4096);
     if (os) { char *v = strstr(os, "VERSION="); if (v) fprintf(f, "os: %.*s\n", (int)strcspn(v, "\n"), v); free(os); }
     fprintf(f, "settings: %s\nplugin lists: %s\nstate: %s\n", d->settings[0] ? d->settings : "(not found)", d->keys, d->state);
-    for (int i = 0; i < d->nloc; i++)
-        fprintf(f, "location: %s%s\n", d->loc[i], !strcmp(d->loc[i], d->target) ? "  <- install target" : good_target(d->loc[i]) ? "  (usable)" : "");
+    char why[320], own[200];
+    for (int i = 0; i < d->nloc; i++) {
+        const char *bad = bad_target(d->loc[i], why, sizeof why);
+        fprintf(f, "location: %s  (%s)\n", d->loc[i], bad ? bad : "usable");
+    }
+    own_synths(own, sizeof own);
+    fprintf(f, "manager folder: %s\ninstall target: %s%s%s%s\n", own[0] ? own : "(unknown)", d->target[0] ? d->target : "(none)",
+            d->via[0] ? "  (from " : "", d->via, d->via[0] ? ")" : "");
     fprintf(f, "tools: systemctl=%d systemd-run=%d cgroup2=%d unzip=%d sha256sum=%d libcurl=%d ca-bundle=%d\n",
             on_path("systemctl"), d->systemd_run, d->cgroup2, on_path("unzip"), on_path("sha256sum"), curl_load(),
             is_file("/etc/ssl/certs/ca-certificates.crt"));
